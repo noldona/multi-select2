@@ -11,6 +11,7 @@
  * @license MIT <https://opensource.org/licenses/MIT>
  *
  * TODO: Make the control responsive
+ * TODO: Fix bugs for multiple selects on single page
  */
 
 // Allowed attributes for element creation
