@@ -612,10 +612,6 @@ class MultiSelect2 {
 	_openDropdown() {
 		// Open the dropdown
 		this._select.addClass("multi-select__select--opened");
-		// this._body.addEventListener("click", this._boundHandleCloseClick);
-		// this._select.removeEventListener("click", this._boundHandleClick);
-		// this._body.addEventListener("keyup", this._boundHandleKeyUp, true);
-		// this._select.removeEventListener("keyup", this._boundHandleKeyUp);
 
 		// Set dropdown state to true
 		this._state.opened = true;
@@ -635,10 +631,6 @@ class MultiSelect2 {
 	_closeDropdown(setFocus=true) {
 		// Close the dropdown
 		this._select.removeClass("multi-select__select--opened");
-		// this._select.addEventListener("click", this._boundHandleClick, true);
-		// this._body.removeEventListener("click", this._boundHandleCloseClick);
-		// this._select.addEventListener("keyup", this._boundHandleKeyUp, true);
-		// this._body.removeEventListener("keyup", this._boundHandleKeyUp);
 		if (setFocus) {
 			this._select.get().focus();
 		}
