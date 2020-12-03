@@ -264,18 +264,8 @@ class MultiSelect2 {
 
 		// If the dropdown is open
 		if (this._state.opened) {
-			// Check if an option was clicked, if so, select it
-			const option = this._options.find(_option => _option.get() === event.target);
-			if (option) {
-				if (!option.get().dataset.disabled) {
-					this._setValue(option.get().dataset.value, true);
-				} else {
-					return;
-				}
-			}
-
 			// Close the dropdown
-			this._closeDropdown();
+			this._closeDropdown(true, true);
 			return;
 		}
 
@@ -303,6 +293,7 @@ class MultiSelect2 {
 	 */
 	_handleCloseClick() {
 		if (this._select.get().classList.contains("multi-select__select--opened")) {
+			event.stopPropagation();
 			// Close the dropdown
 			this._closeDropdown(false);
 		}
@@ -468,25 +459,10 @@ class MultiSelect2 {
 			event.stopPropagation();
 			this._closeAllLists();
 
-			// If click is on the autocomplete field, don't do anything
-			// if (event.target.className === "multi-select__autocomplete") {
-			//  return;
-			// }
-
 			// If the dropdown is open and key pressed is a close key
 			if (this._state.opened && closeKey) {
-				// Check if an option had focus and a selection key was pressed, if so, select it
-				const option = this._options.find(_option => _option.get() === event.target);
-				if (option && selectKey) {
-					if (!option.get().dataset.disabled) {
-						this._setValue(option.get().dataset.value, true);
-					} else {
-						return;
-					}
-				}
-
 				// Close the dropdown
-				this._closeDropdown();
+				this._closeDropdown(true, selectKey);
 				return;
 			}
 
@@ -628,7 +604,19 @@ class MultiSelect2 {
 	/**
 	 * Close the options dropdown
 	 */
-	_closeDropdown(setFocus=true) {
+	_closeDropdown(setFocus=true, select=true) {
+		if (select) {
+			// Check if an option had focus and a selection key was pressed, if so, select it
+			const option = this._options.find(_option => _option.get() === event.target);
+			if (option) {
+				if (!option.get().dataset.disabled) {
+					this._setValue(option.get().dataset.value, true);
+				} else {
+					return;
+				}
+			}
+		}
+
 		// Close the dropdown
 		this._select.removeClass("multi-select__select--opened");
 		if (setFocus) {
