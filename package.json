@@ -18,5 +18,13 @@
     "auto-complete",
     "elegent"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^7.14.0",
+    "gulp": "^4.0.2",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-rename": "^2.0.0",
+    "gulp-terser": "^2.0.0"
+  },
+  "dependencies": {}
 }

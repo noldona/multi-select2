@@ -11,7 +11,6 @@
  * @license MIT <https://opensource.org/licenses/MIT>
  *
  * TODO: Make the control responsive
- * TODO: Fix bugs for multiple selects on single page
  */
 
 // Allowed attributes for element creation
@@ -151,6 +150,10 @@ class MultiSelectElement {
 	}
 }
 
+/**
+ * This is the main class to generate the multi-select control
+ */
+// eslint-disable-next-line no-unused-vars
 class MultiSelect2 {
 	constructor(element, config) {
 		this._config = {...config};
@@ -163,6 +166,7 @@ class MultiSelect2 {
 		// Prepare event listeners for later use
 		this._boundHandleClick = this._handleClick.bind(this);
 		this._boundHandleKeyUp = this._handleKeyUp.bind(this);
+		this._boundHandleCloseClick = this._handleCloseClick.bind(this);
 		this._boundPreventDefaultAction = this._preventDefaultAction.bind(this);
 		this._boundUnselectOption = this._unselectOption.bind(this);
 		this._boundSortOptions = this._sortOptions.bind(this);
@@ -198,10 +202,11 @@ class MultiSelect2 {
 		this._options = this._generateOptionsOfSelect();
 
 		// Add event listeners to the control
-		this._select.addEventListener("click", this._boundHandleClick);
+		this._select.addEventListener("click", this._boundHandleClick, true);
 		this._select.addEventListener("keyup", this._boundHandleKeyUp);
 		this._optionsDiv.addEventListener("keyup", this._boundHandleKeyUp, true);
 		this._body.addEventListener("keydown", this._boundPreventDefaultAction);
+		document.addEventListener("click", this._boundHandleCloseClick);
 
 		// Add a class if multiple items can be selected
 		if (this._config.multiple) {
@@ -275,15 +280,15 @@ class MultiSelect2 {
 		}
 
 		// Check for clicking on the selected option icon for removal
-		if ('fa ' + event.target.parentElement.classList[1] === this._config.icon) {
+		if ("fa " + event.target.parentElement.classList[1] === this._config.icon) {
 			// If the target has a fontawesome icon
 			this._unselectOption(event.target.parentElement.dataset.value);
 			return;
-		} else if (event.target.tagName === 'I' && event.target.classList.contains(this._config.icon)) {
+		} else if (event.target.tagName === "i" && event.target.classList.contains(this._config.icon)) {
 			// If the target is an i tag with a fontawesome class
 			this._unselectOption(event.target.dataset.value);
 			return;
-		} else if (event.target.tagName === 'svg') {
+		} else if (event.target.tagName === "svg") {
 			// If the target is an svg tag, used for fontawesome pro icons
 			this._unselectOption(event.target.dataset.value);
 			return;
@@ -291,6 +296,17 @@ class MultiSelect2 {
 
 		// Open the dropdown
 		this._openDropdown();
+	}
+
+	/**
+	 * Handle clicking outside of control to close dropdown
+	 */
+	_handleCloseClick() {
+		if (this._select.get().classList.contains("multi-select__select--opened")) {
+			// Close the dropdown
+			this._closeDropdown(false);
+		}
+		return;
 	}
 
 	/**
@@ -486,9 +502,9 @@ class MultiSelect2 {
 					// Move to the next option
 					let sibling = document.activeElement.nextSibling;
 					while (sibling) {
-						if (!sibling.classList.contains('multi-select__option--selected') &&
-								!sibling.classList.contains('multi-select__option--hidden') &&
-								!sibling.classList.contains('multi-select__option--group_header') &&
+						if (!sibling.classList.contains("multi-select__option--selected") &&
+								!sibling.classList.contains("multi-select__option--hidden") &&
+								!sibling.classList.contains("multi-select__option--group_header") &&
 								!sibling.dataset.disabled) {
 							sibling.focus();
 							break;
@@ -499,9 +515,9 @@ class MultiSelect2 {
 					// Move to the previous option
 					let sibling = document.activeElement.previousSibling;
 					while (sibling) {
-						if (!sibling.classList.contains('multi-select__option--selected') &&
-								!sibling.classList.contains('multi-select__option--hidden') &&
-								!sibling.classList.contains('multi-select__option--group_header') &&
+						if (!sibling.classList.contains("multi-select__option--selected") &&
+								!sibling.classList.contains("multi-select__option--hidden") &&
+								!sibling.classList.contains("multi-select__option--group_header") &&
 								!sibling.dataset.disabled) {
 							sibling.focus();
 							break;
@@ -512,9 +528,9 @@ class MultiSelect2 {
 					// Move to the last option
 					let sibling = this._optionsDiv.get().lastElementChild;
 					while (sibling) {
-						if (!sibling.classList.contains('multi-select__option--selected') &&
-								!sibling.classList.contains('multi-select__option--hidden') &&
-								!sibling.classList.contains('multi-select__option--group_header') &&
+						if (!sibling.classList.contains("multi-select__option--selected") &&
+								!sibling.classList.contains("multi-select__option--hidden") &&
+								!sibling.classList.contains("multi-select__option--group_header") &&
 								!sibling.dataset.disabled) {
 							sibling.focus();
 							break;
@@ -525,9 +541,9 @@ class MultiSelect2 {
 					// Move to the first option
 					let sibling = this._optionsDiv.get().firstElementChild;
 					while (sibling) {
-						if (!sibling.classList.contains('multi-select__option--selected') &&
-								!sibling.classList.contains('multi-select__option--hidden') &&
-								!sibling.classList.contains('multi-select__option--group_header') &&
+						if (!sibling.classList.contains("multi-select__option--selected") &&
+								!sibling.classList.contains("multi-select__option--hidden") &&
+								!sibling.classList.contains("multi-select__option--group_header") &&
 								!sibling.dataset.disabled) {
 							sibling.focus();
 							break;
@@ -561,6 +577,7 @@ class MultiSelect2 {
 					} else if (deleteKey) {
 						// Remove the selected option with focus
 						this._unselectOption(event.target.querySelector('[data-value]').dataset.value);
+						this._select.get().focus();
 					}
 				// If left arrow is pressed and the drop down is open
 				} else if (rightKey) {
@@ -595,10 +612,10 @@ class MultiSelect2 {
 	_openDropdown() {
 		// Open the dropdown
 		this._select.addClass("multi-select__select--opened");
-		this._body.addEventListener("click", this._boundHandleClick);
-		this._select.removeEventListener("click", this._boundHandleClick);
-		this._body.addEventListener("keyup", this._boundHandleKeyUp, true);
-		this._select.removeEventListener("keyup", this._boundHandleKeyUp);
+		// this._body.addEventListener("click", this._boundHandleCloseClick);
+		// this._select.removeEventListener("click", this._boundHandleClick);
+		// this._body.addEventListener("keyup", this._boundHandleKeyUp, true);
+		// this._select.removeEventListener("keyup", this._boundHandleKeyUp);
 
 		// Set dropdown state to true
 		this._state.opened = true;
@@ -615,14 +632,16 @@ class MultiSelect2 {
 	/**
 	 * Close the options dropdown
 	 */
-	_closeDropdown() {
+	_closeDropdown(setFocus=true) {
 		// Close the dropdown
 		this._select.removeClass("multi-select__select--opened");
-		this._body.removeEventListener("click", this._boundHandleClick);
-		this._select.addEventListener("click", this._boundHandleClick);
-		this._body.addEventListener("keyup", this._boundHandleKeyUp, true);
-		this._select.removeEventListener("keyup", this._boundHandleKeyUp);
-		this._select.get().focus();
+		// this._select.addEventListener("click", this._boundHandleClick, true);
+		// this._body.removeEventListener("click", this._boundHandleCloseClick);
+		// this._select.addEventListener("keyup", this._boundHandleKeyUp, true);
+		// this._body.removeEventListener("keyup", this._boundHandleKeyUp);
+		if (setFocus) {
+			this._select.get().focus();
+		}
 
 		// Set dropdown state to false
 		this._state.opened = false;
@@ -668,6 +687,10 @@ class MultiSelect2 {
 	 * Set the value of the control
 	 */
 	_setValue(value, manual, unselected) {
+		if (this._config.autocomplete) {
+			this._autocomplete.get().value = '';
+			this._removeAllHiddenClass();
+		}
 		if (value && !unselected) {
 			this._config.value = this._config.multiple ? this._config.value.concat(value) : value;
 		}
@@ -785,7 +808,7 @@ class MultiSelect2 {
 	_sortOptions(event) {
 		this._options.forEach(_option => {
 			if (!_option.get().textContent.toLowerCase().includes(event.target.value.toLowerCase()) &&
-					!_option.get().classList.contains('multi-select__option--group_header')) {
+					!_option.get().classList.contains("multi-select__option--group_header")) {
 				_option.addClass("multi-select__option--hidden");
 				return;
 			}
@@ -794,14 +817,23 @@ class MultiSelect2 {
 	}
 
 	/**
+	 * Remove the hidden class from all of the options
+	 */
+	_removeAllHiddenClass() {
+		this._options.forEach(_option => {
+			_option.removeClass("multi-select__option--hidden");
+		});
+	}
+
+	/**
 	 * Close the dropdown for any other multi-select fields
 	 */
 	_closeAllLists() {
-		let elements = document.getElementsByClassName('multi-select__select');
+		let elements = document.getElementsByClassName("multi-select__select");
 		for (let i = 0; i < elements.length; i++) {
 			if (elements[i] !== this._select.get()) {
-				if (elements[i].classList.contains('multi-select__select--opened')) {
-					elements[i].classList.remove('multi-select__select--opened');
+				if (elements[i].classList.contains("multi-select__select--opened")) {
+					elements[i].classList.remove("multi-select__select--opened");
 				}
 			}
 		}
