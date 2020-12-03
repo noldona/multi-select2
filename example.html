@@ -16,7 +16,7 @@
 
 		<h3>Grouped Multi-select:</h3>
 		<input type="hidden" id="select2" name="select2" value=""/>
-		<div class="autocomplete-select"></div>
+		<div class="multi-select"></div>
 
 </div>
 <script src="multi-select2.js"></script>
@@ -787,7 +787,6 @@
 				label: "Zulu",
 				value: "zu"
 			},
-
 		],
 		autocomplete: true,
 		onChange: value => {
@@ -796,7 +795,7 @@
 		},
 	});
 	console.log(single);
-	var autocomplete = new MultiSelect2(".autocomplete-select", {
+	var multi = new MultiSelect2(".multi-select", {
 			options: [
 				{
 					label: "A",
@@ -993,6 +992,7 @@
 				console.log(value);
 			},
 	});
+	console.log(multi);
 </script>
 </body>
 </html>

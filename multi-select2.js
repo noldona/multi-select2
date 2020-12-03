@@ -25,17 +25,6 @@ const allowedAttributes = {
 	tabindex: "tabindex"
 };
 
-function hasClassName(element, selector) {
-	let className = " " + selector + " ";
-	for (let i = 0, l = element.length; i < l; i++) {
-		if ((" " + element.className + " ").replace(/[\n\t\r]/g, " ").indexOf(className) > -1) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
 /**
  * MultiSelectElement
  *
@@ -260,7 +249,6 @@ class MultiSelect2 {
 	 */
 	_handleClick(event) {
 		// Reset dropdown
-		this._firstActive();
 		event.stopPropagation();
 		this._closeAllLists();
 
@@ -291,7 +279,7 @@ class MultiSelect2 {
 			// If the target has a fontawesome icon
 			this._unselectOption(event.target.parentElement.dataset.value);
 			return;
-		} else if (event.target.tagName === 'I' && hasClassName(event.target, this._config.icon) + " ") {
+		} else if (event.target.tagName === 'I' && event.target.classList.contains(this._config.icon)) {
 			// If the target is an i tag with a fontawesome class
 			this._unselectOption(event.target.dataset.value);
 			return;
@@ -461,7 +449,6 @@ class MultiSelect2 {
 		// If this is a key we are handling
 		if (handled) {
 			// Reset dropdown
-			this._firstActive();
 			event.stopPropagation();
 			this._closeAllLists();
 
@@ -499,9 +486,9 @@ class MultiSelect2 {
 					// Move to the next option
 					let sibling = document.activeElement.nextSibling;
 					while (sibling) {
-						if (!hasClassName(sibling,  'multi-select__option--selected') &&
-								!hasClassName(sibling, 'multi-select__option--hidden') &&
-								!hasClassName(sibling, 'multi-select__option--group_header') &&
+						if (!sibling.classList.contains('multi-select__option--selected') &&
+								!sibling.classList.contains('multi-select__option--hidden') &&
+								!sibling.classList.contains('multi-select__option--group_header') &&
 								!sibling.dataset.disabled) {
 							sibling.focus();
 							break;
@@ -512,9 +499,9 @@ class MultiSelect2 {
 					// Move to the previous option
 					let sibling = document.activeElement.previousSibling;
 					while (sibling) {
-						if (!hasClassName(sibling, 'multi-select__option--selected') &&
-								!hasClassName(sibling, 'multi-select__option--hidden') &&
-								!hasClassName(sibling, 'multi-select__option--group_header') &&
+						if (!sibling.classList.contains('multi-select__option--selected') &&
+								!sibling.classList.contains('multi-select__option--hidden') &&
+								!sibling.classList.contains('multi-select__option--group_header') &&
 								!sibling.dataset.disabled) {
 							sibling.focus();
 							break;
@@ -525,9 +512,9 @@ class MultiSelect2 {
 					// Move to the last option
 					let sibling = this._optionsDiv.get().lastElementChild;
 					while (sibling) {
-						if (!hasClassName(sibling, 'multi-select__option--selected') &&
-								!hasClassName(sibling, 'multi-select__option--hidden') &&
-								!hasClassName(sibling, 'multi-select__option--group_header') &&
+						if (!sibling.classList.contains('multi-select__option--selected') &&
+								!sibling.classList.contains('multi-select__option--hidden') &&
+								!sibling.classList.contains('multi-select__option--group_header') &&
 								!sibling.dataset.disabled) {
 							sibling.focus();
 							break;
@@ -538,9 +525,9 @@ class MultiSelect2 {
 					// Move to the first option
 					let sibling = this._optionsDiv.get().firstElementChild;
 					while (sibling) {
-						if (!hasClassName(sibling, 'multi-select__option--selected') &&
-								!hasClassName(sibling, 'multi-select__option--hidden') &&
-								!hasClassName(sibling, 'multi-select__option--group_header') &&
+						if (!sibling.classList.contains('multi-select__option--selected') &&
+								!sibling.classList.contains('multi-select__option--hidden') &&
+								!sibling.classList.contains('multi-select__option--group_header') &&
 								!sibling.dataset.disabled) {
 							sibling.focus();
 							break;
@@ -551,7 +538,7 @@ class MultiSelect2 {
 			}
 
 			// If the dropdown is not open, or the left key or the right key was pressed
-			if ((!this._state.opened && selectedMoveKey) || leftKey || rightKey) {
+			if (this._config.multiple && ((!this._state.opened && selectedMoveKey) || leftKey || rightKey)) {
 				// If focus is currently on one of the selected options
 				if (this._selected_value.get().contains(document.activeElement)) {
 					// Handle normal movement through selected options
@@ -582,8 +569,10 @@ class MultiSelect2 {
 						this._closeDropdown();
 					}
 
-					// Select the first selected option
-					this._selected_value.get().firstElementChild.focus();
+					if (this._selected_value.get().hasChildNodes()) {
+						// Select the first selected option
+						this._selected_value.get().firstElementChild.focus();
+					}
 				// If the right arrow is pressed and the drop down is open
 				} else if (leftKey) {
 					if (this._state.opened) {
@@ -591,8 +580,10 @@ class MultiSelect2 {
 						this._closeDropdown();
 					}
 
-					// Select the last selected option
-					this._selected_value.get().lastElementChild.focus();
+					if (this._selected_value.get().hasChildNodes()) {
+						// Select the last selected option
+						this._selected_value.get().lastElementChild.focus();
+					}
 				}
 			}
 		}
@@ -664,8 +655,9 @@ class MultiSelect2 {
 				}
 				return;
 			}
-			let eventKeys = ["Enter"];
-			if (document.activeElement != this._autocomplete.get() || eventKeys.includes(event.key)) {
+			let eventKeys = ["Enter", " ", "Spacebar", "Escape", "Esc", "ArrowDown", "Down", "ArrowUp", "Up", "ArrowLeft", "Left", "ArrowRight",
+				"Right", "Delete", "Del", "Backspace", "Home", "PageUp", "End", "PageDown"];
+			if ((!this._config.autocomplete || document.activeElement != this._autocomplete.get()) && eventKeys.includes(event.key)) {
 				event.preventDefault();
 				event.stopPropagation();
 			}
@@ -793,98 +785,17 @@ class MultiSelect2 {
 	_sortOptions(event) {
 		this._options.forEach(_option => {
 			if (!_option.get().textContent.toLowerCase().includes(event.target.value.toLowerCase()) &&
-					!hasClassName(_option.get(), 'multi-select__option--group_header')) {
+					!_option.get().classList.contains('multi-select__option--group_header')) {
 				_option.addClass("multi-select__option--hidden");
 				return;
 			}
 			_option.removeClass("multi-select__option--hidden");
 		});
-		this._firstActive();
 	}
 
 	/**
-	 * Get visible options
+	 * Close the dropdown for any other multi-select fields
 	 */
-	_visibleOptions() {
-		return this._optionsDiv.get().querySelectorAll('div.multi-select__option:not(.multi-select__option--hidden)');
-	}
-
-	/**
-	 * Get unselected options
-	 */
-	_unselectedOptions() {
-		return this._optionsDiv.get().querySelectorAll('div.multi-select__option:not(.multi-select__option--selected):not(.multi-select__option--hidden)');
-	}
-
-	/**
-	 * Get selected options
-	 */
-	_selectedOptions() {
-		return this._optionsDiv.get().querySelectorAll('.multi-select__option--selected');
-	}
-
-	// Add active color on active item in dropdown
-	_addActive(x) {
-		/*a function to classify an item as "active":*/
-		if (!x) return false;
-		/*start by removing the "active" class on all items:*/
-		this._removeActive(x);
-		// checks if list ends or starts and set current fouces accordingly
-		this._listEndingCheck(x);
-
-		x[this.currentFocus].classList.add("multi-select__option-active");
-		x[this.currentFocus].scrollIntoView();
-	}
-
-	/*a function to remove the "active" class from all autocomplete items:*/
-	_removeActive(x) {
-		for (var i = 0; i < x.length; i++) {
-			x[i].classList.remove("multi-select__option-active");
-		}
-	}
-
-	// select the next unselected value from dropdown
-	_nextUnselected(x) {
-		this.currentFocus++;
-		while (x[this.currentFocus] && x[this.currentFocus].classList.contains('multi-select__option--selected')) {
-			this.currentFocus++;
-		}
-	}
-
-	// get the previous unselected element from dropdown
-	_previousUnselected(x) {
-		this.currentFocus--;
-		while (x[this.currentFocus] && x[this.currentFocus].classList.contains('multi-select__option--selected')) {
-			this.currentFocus--;
-		}
-	}
-
-	// check if list ends or the start of list
-	_listEndingCheck(x) {
-		if (this.currentFocus >= x.length) {
-			this.currentFocus = -1;
-			this._nextUnselected(x);
-		}
-
-		if (this.currentFocus < 0) {
-			this.currentFocus = (x.length);
-			this._previousUnselected(x);
-		}
-	}
-
-	// get the first active element from dropdown
-	_firstActive() {
-		this.currentFocus = -1;
-		this._removeActive(this._visibleOptions());
-		if (this._config.autocomplete) {
-			if (this._unselectedOptions().length > 0) {
-				this._nextUnselected(this._visibleOptions());
-				this._visibleOptions()[this.currentFocus].classList.add("multi-select__option-active");
-			}
-		}
-	}
-
-	// On opening of select close all other selects
 	_closeAllLists() {
 		let elements = document.getElementsByClassName('multi-select__select');
 		for (let i = 0; i < elements.length; i++) {
