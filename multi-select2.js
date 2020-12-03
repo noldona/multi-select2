@@ -206,7 +206,7 @@ class MultiSelect2 {
 		this._select.addEventListener("keyup", this._boundHandleKeyUp);
 		this._optionsDiv.addEventListener("keyup", this._boundHandleKeyUp, true);
 		this._body.addEventListener("keydown", this._boundPreventDefaultAction);
-		document.addEventListener("click", this._boundHandleCloseClick);
+		document.addEventListener("click", this._boundHandleCloseClick, true);
 
 		// Add a class if multiple items can be selected
 		if (this._config.multiple) {
